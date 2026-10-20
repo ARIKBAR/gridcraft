@@ -1043,7 +1043,11 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
         .anchor(egui::Align2::CENTER_CENTER, vec2(0.0, -40.0))
         .open(&mut win_open);
     let window = if d.name == "insertPicture" { window.default_height(240.0) } else { window };
+    // A right-to-left interface (Hebrew) lays dialogs out from the right: labels hug the right
+    // edge and rows (buttons, fields beside their labels) flow from the right.
+    let layout = egui::Layout::top_down(if app.ui.language.is_rtl() { egui::Align::Max } else { egui::Align::Min });
     window.show(ctx, |ui| {
+        ui.with_layout(layout, |ui| {
             ui.set_min_width(width - 20.0);
             match d.name.as_str() {
                 "formatCells" => format_cells(app, ui, &mut d, &mut confirm),
@@ -1231,6 +1235,7 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
                 _ => form(ui, &mut d, &mut confirm, &mut open),
             }
         });
+    });
     // Hyperlinks inside dialogs (About ▸ Contributors) open through the host's `open_url`, since
     // the native shell has no browser integration of its own.
     if let Some(open_url) = &app.services.open_url {
@@ -1365,10 +1370,29 @@ fn paste_special_shortcuts(d: &mut Dialog, ctx: &egui::Context) {
     });
 }
 
+/// A dialog column (`ui.vertical`). In a right-to-left interface it hugs its right edge, so its
+/// labels and the rows inside it start on the right.
+fn column<R>(ui: &mut egui::Ui, add_contents: impl FnOnce(&mut egui::Ui) -> R) -> egui::InnerResponse<R> {
+    let align = if crate::i18n::current(ui.ctx()).is_rtl() { egui::Align::Max } else { egui::Align::Min };
+    ui.scope_builder(egui::UiBuilder::new().layout(egui::Layout::top_down(align)), add_contents)
+}
+
+/// The row a dialog's closing buttons sit in, from the trailing corner: bottom right, or bottom
+/// left in a right-to-left interface.
+fn trailing_row(ui: &egui::Ui) -> egui::Layout {
+    if crate::i18n::current(ui.ctx()).is_rtl() {
+        egui::Layout::left_to_right(egui::Align::Center)
+    } else {
+        egui::Layout::right_to_left(egui::Align::Center)
+    }
+}
+
 fn ok_cancel(ui: &mut egui::Ui, confirm: &mut bool, open: &mut bool) {
     ui.add_space(8.0);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-        let lang = crate::i18n::current(ui.ctx());
+    // The buttons sit in the trailing corner: bottom right, or bottom left when mirrored.
+    let lang = crate::i18n::current(ui.ctx());
+    let row = if lang.is_rtl() { egui::Layout::left_to_right(egui::Align::Center) } else { egui::Layout::right_to_left(egui::Align::Center) };
+    ui.with_layout(row, |ui| {
         let ok = ui.add(
             egui::Button::new(egui::RichText::new(format!("   {}   ", lang.tr("OK"))).color(Color32::WHITE))
                 .fill(crate::theme::Tokens::get(ui.ctx()).accent),
@@ -1389,12 +1413,13 @@ fn form(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) 
 
 /// Draws a dialog's `fields`, editing its values.
 fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
+    let lang = crate::i18n::current(ui.ctx());
     egui::Grid::new("form").num_columns(1).spacing(vec2(8.0, 6.0)).show(ui, |ui| {
         for f in d.fields.clone() {
             match f {
                 Field::Text { key, label } => {
-                    ui.vertical(|ui| {
-                        ui.label(label);
+                    column(ui, |ui| {
+                        ui.label(lang.tr(label));
                         let mut s = d
                             .values
                             .get(key)
@@ -1413,18 +1438,18 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                 }
                 Field::Password { key, label } => {
                     // Masked as typed (Excel shows dots); "Show password" reveals it on purpose.
-                    ui.vertical(|ui| {
-                        ui.label(label);
+                    column(ui, |ui| {
+                        ui.label(lang.tr(label));
                         let mut s = d.values.get(key).and_then(Json::as_str).unwrap_or_default().to_string();
                         if ui.add(egui::TextEdit::singleline(&mut s).password(!d.show_password).desired_width(320.0)).changed() {
                             d.values.insert(key.into(), json!(s));
                         }
-                        ui.checkbox(&mut d.show_password, "Show password");
+                        ui.checkbox(&mut d.show_password, lang.tr("Show password"));
                     });
                 }
                 Field::Number { key, label } => {
                     ui.horizontal(|ui| {
-                        ui.label(label);
+                        ui.label(lang.tr(label));
                         let mut n = d.values.get(key).and_then(Json::as_f64).unwrap_or(0.0);
                         if ui.add(egui::DragValue::new(&mut n).speed(0.5)).changed() {
                             d.values.insert(key.into(), json!(n));
@@ -1432,21 +1457,21 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                     });
                 }
                 Field::Choice { key, label, options } => {
-                    ui.vertical(|ui| {
-                        ui.label(egui::RichText::new(label).strong());
+                    column(ui, |ui| {
+                        ui.label(egui::RichText::new(lang.tr(label)).strong());
                         let cur = d.values.get(key).and_then(Json::as_str).unwrap_or("").to_string();
                         if d.name == "dataValidation" {
                             let selected = options.iter().find(|(val, _)| *val == cur).map(|(_, text)| *text).unwrap_or("");
-                            egui::ComboBox::from_id_salt(("dataValidation", key)).selected_text(selected).width(300.0).show_ui(ui, |ui| {
+                            egui::ComboBox::from_id_salt(("dataValidation", key)).selected_text(lang.tr(selected)).width(300.0).show_ui(ui, |ui| {
                                 for (val, text) in options {
-                                    if ui.selectable_label(cur == val, text).clicked() {
+                                    if ui.selectable_label(cur == val, lang.tr(text)).clicked() {
                                         d.set_value(key, json!(val));
                                     }
                                 }
                             });
                         } else {
                             for (val, text) in options {
-                                if ui.radio(cur == val, text).clicked() {
+                                if ui.radio(cur == val, lang.tr(text)).clicked() {
                                     d.set_value(key, json!(val));
                                 }
                             }
@@ -1455,12 +1480,12 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                 }
                 Field::Check { key, label } => {
                     let mut b = d.values.get(key).and_then(Json::as_bool).unwrap_or(false);
-                    if ui.checkbox(&mut b, label).changed() {
+                    if ui.checkbox(&mut b, lang.tr(label)).changed() {
                         d.values.insert(key.into(), json!(b));
                     }
                 }
                 Field::Note(t) => {
-                    ui.label(egui::RichText::new(t).small());
+                    ui.label(egui::RichText::new(lang.tr(&t)).small());
                 }
             }
             ui.end_row();
@@ -1549,44 +1574,63 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
     match d.tab.as_str() {
         "Number" => {
             let mut code = st.num_fmt.as_str().to_string();
+            // Mirrored in a right-to-left interface: the categories on the right.
+            let rtl = lang.is_rtl();
+            let layout = egui::Layout::top_down(if rtl { egui::Align::Max } else { egui::Align::Min });
             ui.columns(2, |cols| {
-                cols[0].label(egui::RichText::new(lang.tr("Category:")).strong());
-                for name in
-                    ["General", "Number", "Currency", "Accounting", "Short Date", "Long Date", "Time", "Percentage", "Fraction", "Scientific", "Text"]
-                {
-                    let c = gridcraft_engine::cmd::format::format_code_for(name).to_string();
-                    if cols[0].selectable_label(code == c, lang.tr(name)).clicked() {
-                        code = c;
+                let [left, right] = cols else { return };
+                let (categories, side) = if rtl { (right, left) } else { (left, right) };
+                categories.with_layout(layout, |ui| {
+                    ui.label(egui::RichText::new(lang.tr("Category:")).strong());
+                    for name in [
+                        "General",
+                        "Number",
+                        "Currency",
+                        "Accounting",
+                        "Short Date",
+                        "Long Date",
+                        "Time",
+                        "Percentage",
+                        "Fraction",
+                        "Scientific",
+                        "Text",
+                    ] {
+                        let c = gridcraft_engine::cmd::format::format_code_for(name).to_string();
+                        if ui.selectable_label(code == c, lang.tr(name)).clicked() {
+                            code = c;
+                        }
                     }
-                }
-                cols[1].label(egui::RichText::new(lang.tr("Sample")).strong());
-                let preview = app.session.active().map(|doc| gridcraft_engine::display::format(&sample, &code, &doc.wb).text).unwrap_or_default();
-                cols[1].label(egui::RichText::new(preview).font(theme::ui_font(15.0)));
-                cols[1].add_space(8.0);
-                cols[1].label(lang.tr("Type (custom format code):"));
-                cols[1].text_edit_singleline(&mut code);
-                for c in [
-                    "0",
-                    "0.00",
-                    "#,##0",
-                    "#,##0.00",
-                    "#,##0;[Red]-#,##0",
-                    "0%",
-                    "0.00%",
-                    "0.00E+00",
-                    "# ?/?",
-                    "m/d/yyyy",
-                    "d-mmm-yy",
-                    "mmmm d, yyyy",
-                    "h:mm AM/PM",
-                    "h:mm:ss",
-                    "[h]:mm:ss",
-                    "@",
-                ] {
-                    if cols[1].small_button(c).clicked() {
-                        code = c.to_string();
+                });
+                side.with_layout(layout, |ui| {
+                    ui.label(egui::RichText::new(lang.tr("Sample")).strong());
+                    let preview = app.session.active().map(|doc| gridcraft_engine::display::format(&sample, &code, &doc.wb).text).unwrap_or_default();
+                    ui.label(egui::RichText::new(preview).font(theme::ui_font(15.0)));
+                    ui.add_space(8.0);
+                    ui.label(lang.tr("Type (custom format code):"));
+                    ui.text_edit_singleline(&mut code);
+                    for c in [
+                        "0",
+                        "0.00",
+                        "#,##0",
+                        "#,##0.00",
+                        "#,##0;[Red]-#,##0",
+                        "0%",
+                        "0.00%",
+                        "0.00E+00",
+                        "# ?/?",
+                        "m/d/yyyy",
+                        "d-mmm-yy",
+                        "mmmm d, yyyy",
+                        "h:mm AM/PM",
+                        "h:mm:ss",
+                        "[h]:mm:ss",
+                        "@",
+                    ] {
+                        if ui.small_button(c).clicked() {
+                            code = c.to_string();
+                        }
                     }
-                }
+                });
             });
             st.num_fmt = gridcraft_engine::model::NumFmt::new(&code);
         }
@@ -2024,7 +2068,7 @@ fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &mu
         });
     });
     ui.add_space(8.0);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    ui.with_layout(trailing_row(ui), |ui| {
         if ui.button(" Close ").clicked() {
             *open = false;
         }
@@ -2099,7 +2143,7 @@ fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, con
     let choices = chart_choices(d);
     let t = crate::theme::Tokens::get(ui.ctx());
     ui.horizontal_top(|ui| {
-        ui.vertical(|ui| {
+        column(ui, |ui| {
             ui.set_width(190.0);
             egui::ScrollArea::vertical().id_salt("chart_choices").max_height(300.0).show(ui, |ui| {
                 for (i, (kind, _, label)) in choices.iter().enumerate() {
@@ -2121,7 +2165,7 @@ fn recommended_charts(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, con
             });
         });
         ui.add_space(12.0);
-        ui.vertical(|ui| {
+        column(ui, |ui| {
             let label = choices.get(d.list_index).map(|c| c.2.clone()).unwrap_or_default();
             ui.strong(label);
             let (rect, _) = ui.allocate_exact_size(vec2(360.0, 216.0), Sense::hover());
@@ -2552,7 +2596,7 @@ fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool
         .small(),
     );
     ui.add_space(8.0);
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    ui.with_layout(trailing_row(ui), |ui| {
         let solve =
             ui.add(egui::Button::new(egui::RichText::new("  Solve  ").color(Color32::WHITE)).fill(crate::theme::Tokens::get(ui.ctx()).accent));
         if solve.clicked() && !text(d, "objective").trim().is_empty() {
