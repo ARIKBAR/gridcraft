@@ -1447,7 +1447,7 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                         if ui.add(egui::TextEdit::singleline(&mut s).password(!d.show_password).desired_width(320.0)).changed() {
                             d.values.insert(key.into(), json!(s));
                         }
-                        ui.checkbox(&mut d.show_password, lang.tr("Show password"));
+                        crate::widgets::checkbox(ui, &mut d.show_password, lang.tr("Show password"));
                     });
                 }
                 Field::Number { key, label } => {
@@ -1474,7 +1474,7 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                             });
                         } else {
                             for (val, text) in options {
-                                if ui.radio(cur == val, lang.tr(text)).clicked() {
+                                if crate::widgets::radio(ui, cur == val, lang.tr(text)).clicked() {
                                     d.set_value(key, json!(val));
                                 }
                             }
@@ -1483,7 +1483,7 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                 }
                 Field::Check { key, label } => {
                     let mut b = d.values.get(key).and_then(Json::as_bool).unwrap_or(false);
-                    if ui.checkbox(&mut b, lang.tr(label)).changed() {
+                    if crate::widgets::checkbox(ui, &mut b, lang.tr(label)).changed() {
                         d.values.insert(key.into(), json!(b));
                     }
                 }
@@ -1661,7 +1661,7 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (HAlign::CenterAcross, "Center Across Selection"),
                     (HAlign::Distributed, "Distributed"),
                 ] {
-                    ui.radio_value(&mut st.align.h, h, lang.tr(n));
+                    crate::widgets::radio_value(ui, &mut st.align.h, h, lang.tr(n));
                 }
             });
             ui.label(egui::RichText::new(lang.tr("Vertical")).strong());
@@ -1673,7 +1673,7 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (VAlign::Justify, "Justify"),
                     (VAlign::Distributed, "Distributed"),
                 ] {
-                    ui.radio_value(&mut st.align.v, v, lang.tr(n));
+                    crate::widgets::radio_value(ui, &mut st.align.v, v, lang.tr(n));
                 }
             });
             let mut indent = st.align.indent as f32;
@@ -1682,8 +1682,8 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
             let mut rot = if st.align.rotation == 255 { 0.0 } else { st.align.rotation as f32 };
             ui.add(egui::Slider::new(&mut rot, -90.0..=90.0).text(lang.tr("Orientation (degrees)")));
             st.align.rotation = rot as i16;
-            ui.checkbox(&mut st.align.wrap, lang.tr("Wrap text"));
-            ui.checkbox(&mut st.align.shrink, lang.tr("Shrink to fit"));
+            crate::widgets::checkbox(ui, &mut st.align.wrap, lang.tr("Wrap text"));
+            crate::widgets::checkbox(ui, &mut st.align.shrink, lang.tr("Shrink to fit"));
         }
         "Font" => {
             egui::ComboBox::from_label(lang.tr("Font")).selected_text(st.font.name.clone()).show_ui(ui, |ui| {
@@ -1693,9 +1693,9 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
             });
             ui.add(egui::Slider::new(&mut st.font.size, 6.0..=72.0).text(lang.tr("Size")));
             ui.horizontal(|ui| {
-                ui.checkbox(&mut st.font.bold, lang.tr("Bold"));
-                ui.checkbox(&mut st.font.italic, lang.tr("Italic"));
-                ui.checkbox(&mut st.font.strike, lang.tr("Strikethrough"));
+                crate::widgets::checkbox(ui, &mut st.font.bold, lang.tr("Bold"));
+                crate::widgets::checkbox(ui, &mut st.font.italic, lang.tr("Italic"));
+                crate::widgets::checkbox(ui, &mut st.font.strike, lang.tr("Strikethrough"));
             });
             use gridcraft_engine::model::{Underline, VertAlign};
             ui.horizontal(|ui| {
@@ -1706,13 +1706,13 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
                     (Underline::SingleAccounting, "Single Accounting"),
                     (Underline::DoubleAccounting, "Double Accounting"),
                 ] {
-                    ui.radio_value(&mut st.font.underline, u, lang.tr(n));
+                    crate::widgets::radio_value(ui, &mut st.font.underline, u, lang.tr(n));
                 }
             });
             ui.horizontal(|ui| {
-                ui.radio_value(&mut st.font.vert, VertAlign::Baseline, lang.tr("Normal"));
-                ui.radio_value(&mut st.font.vert, VertAlign::Superscript, lang.tr("Superscript"));
-                ui.radio_value(&mut st.font.vert, VertAlign::Subscript, lang.tr("Subscript"));
+                crate::widgets::radio_value(ui, &mut st.font.vert, VertAlign::Baseline, lang.tr("Normal"));
+                crate::widgets::radio_value(ui, &mut st.font.vert, VertAlign::Superscript, lang.tr("Superscript"));
+                crate::widgets::radio_value(ui, &mut st.font.vert, VertAlign::Subscript, lang.tr("Subscript"));
             });
             ui.label(lang.tr("Color:"));
             let colors = app.session.active().map(|doc| doc.wb.theme.colors).unwrap_or_default();
@@ -1780,8 +1780,8 @@ fn format_cells(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: 
             }
         }
         "Protection" => {
-            ui.checkbox(&mut st.protection.locked, lang.tr("Locked"));
-            ui.checkbox(&mut st.protection.hidden, lang.tr("Hidden"));
+            crate::widgets::checkbox(ui, &mut st.protection.locked, lang.tr("Locked"));
+            crate::widgets::checkbox(ui, &mut st.protection.hidden, lang.tr("Hidden"));
             ui.label(
                 egui::RichText::new(
                     lang.tr("Locking cells or hiding formulas has no effect until you protect the worksheet (Review › Protect Sheet)."),
@@ -1884,9 +1884,9 @@ fn find(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog) {
     let mut whole = d.values.get("wholeCell").and_then(Json::as_bool).unwrap_or(false);
     let mut wb = d.values.get("within").and_then(Json::as_str) == Some("workbook");
     ui.horizontal(|ui| {
-        ui.checkbox(&mut case, "Match case");
-        ui.checkbox(&mut whole, "Match entire cell contents");
-        ui.checkbox(&mut wb, "Within workbook");
+        crate::widgets::checkbox(ui, &mut case, "Match case");
+        crate::widgets::checkbox(ui, &mut whole, "Match entire cell contents");
+        crate::widgets::checkbox(ui, &mut wb, "Within workbook");
     });
     d.values.insert("what".into(), json!(what));
     d.values.insert("with".into(), json!(with));
@@ -1980,7 +1980,7 @@ fn go_to(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bo
 
 fn sort(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     let mut header = d.values.get("header").and_then(Json::as_bool).unwrap_or(true);
-    ui.checkbox(&mut header, "My list has headers");
+    crate::widgets::checkbox(ui, &mut header, "My list has headers");
     d.values.insert("header".into(), json!(header));
     let mut levels: Vec<Json> = d.values.get("levels").and_then(Json::as_array).cloned().unwrap_or_default();
     let mut remove = None;
@@ -2004,8 +2004,8 @@ fn sort(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut boo
                 });
             lv["by"] = json!(by);
             let mut desc = lv["order"].as_str() == Some("desc");
-            ui.radio_value(&mut desc, false, "A to Z");
-            ui.radio_value(&mut desc, true, "Z to A");
+            crate::widgets::radio_value(ui, &mut desc, false, "A to Z");
+            crate::widgets::radio_value(ui, &mut desc, true, "Z to A");
             lv["order"] = json!(if desc { "desc" } else { "asc" });
             if ui.small_button("✕").clicked() {
                 remove = Some(i);
@@ -2492,7 +2492,7 @@ fn analysis_toolpak(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confi
     let to = d.values.get("outputTo").and_then(Json::as_str).unwrap_or("newSheet").to_string();
     for (key, choice, text_label) in [("output", "range", "Output Range:"), ("newSheet", "newSheet", "New Worksheet Ply:")] {
         ui.horizontal(|ui| {
-            if ui.radio(to == choice, text_label).clicked() {
+            if crate::widgets::radio(ui, to == choice, text_label).clicked() {
                 d.values.insert("outputTo".into(), json!(choice));
             }
             let mut t = d.values.get(key).and_then(Json::as_str).unwrap_or("").to_string();
@@ -2523,7 +2523,7 @@ fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool
     ui.horizontal(|ui| {
         ui.label(crate::i18n::current(ui.ctx()).tr("To:"));
         for (g, label) in [("max", "Max"), ("min", "Min"), ("value", "Value Of:")] {
-            if ui.radio(goal == g, label).clicked() {
+            if crate::widgets::radio(ui, goal == g, label).clicked() {
                 d.values.insert("goal".into(), json!(g));
             }
         }
@@ -2581,7 +2581,7 @@ fn solver(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool
         }
     });
     let mut nonneg = d.values.get("nonNegative").and_then(Json::as_bool).unwrap_or(true);
-    if ui.checkbox(&mut nonneg, "Make Unconstrained Variables Non-Negative").changed() {
+    if crate::widgets::checkbox(ui, &mut nonneg, "Make Unconstrained Variables Non-Negative").changed() {
         d.values.insert("nonNegative".into(), json!(nonneg));
     }
     let method = text(d, "method");
@@ -2631,10 +2631,10 @@ fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &
     let restore = d.values.get("restore").and_then(Json::as_bool).unwrap_or(false);
     if changed {
         ui.add_space(4.0);
-        if ui.radio(!restore, "Keep Solver Solution").clicked() {
+        if crate::widgets::radio(ui, !restore, "Keep Solver Solution").clicked() {
             d.values.insert("restore".into(), json!(false));
         }
-        if ui.radio(restore, "Restore Original Values").clicked() {
+        if crate::widgets::radio(ui, restore, "Restore Original Values").clicked() {
             d.values.insert("restore".into(), json!(true));
         }
     }
@@ -2645,7 +2645,7 @@ fn solver_results(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &
         ui.label(crate::i18n::current(ui.ctx()).tr("Reports:"));
         for (key, label) in [("answerReport", "Answer"), ("limitsReport", "Limits")] {
             let mut on = d.values.get(key).and_then(Json::as_bool).unwrap_or(false);
-            if ui.checkbox(&mut on, label).changed() {
+            if crate::widgets::checkbox(ui, &mut on, label).changed() {
                 d.values.insert(key.into(), json!(on));
             }
         }
