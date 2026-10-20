@@ -120,7 +120,7 @@ fn watch(app: &mut SheetApp, ui: &mut Ui) {
         let _ = app.session.run("formulas.watchWindow", json!({"add": r}));
     }
     let list = app.session.run("formulas.watchWindow", json!({})).unwrap_or(Json::Null);
-    egui::Grid::new("watch_grid").striped(true).num_columns(4).show(ui, |ui| {
+    crate::widgets::Grid::new("watch_grid").striped(true).num_columns(4).show(ui, |ui| {
         ui.strong("Cell");
         ui.strong("Value");
         ui.strong("Formula");

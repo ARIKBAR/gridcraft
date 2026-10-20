@@ -1043,6 +1043,9 @@ pub fn show(app: &mut SheetApp, ctx: &egui::Context) {
         .anchor(egui::Align2::CENTER_CENTER, vec2(0.0, -40.0))
         .open(&mut win_open);
     let window = if d.name == "insertPicture" { window.default_height(240.0) } else { window };
+    // Content laid out from the right edge fills the width it is given, so an auto-sized window
+    // would grow every frame: a right-to-left interface keeps dialogs at their width.
+    let window = if app.ui.language.is_rtl() { window.max_width(width) } else { window };
     // A right-to-left interface (Hebrew) lays dialogs out from the right: labels hug the right
     // edge and rows (buttons, fields beside their labels) flow from the right.
     let layout = egui::Layout::top_down(if app.ui.language.is_rtl() { egui::Align::Max } else { egui::Align::Min });
@@ -1414,7 +1417,7 @@ fn form(ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool, open: &mut bool) 
 /// Draws a dialog's `fields`, editing its values.
 fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
     let lang = crate::i18n::current(ui.ctx());
-    egui::Grid::new("form").num_columns(1).spacing(vec2(8.0, 6.0)).show(ui, |ui| {
+    let mut fields = |ui: &mut egui::Ui| {
         for f in d.fields.clone() {
             match f {
                 Field::Text { key, label } => {
@@ -1490,7 +1493,17 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
             }
             ui.end_row();
         }
-    });
+    };
+    // egui's Grid lays its cells out from the left only (a right-aligned layout made the dialog
+    // disappear): a right-to-left interface stacks the fields in a column from the right instead.
+    if lang.is_rtl() {
+        column(ui, |ui| {
+            ui.spacing_mut().item_spacing.y = 6.0;
+            fields(ui);
+        });
+    } else {
+        crate::widgets::Grid::new("form").num_columns(1).spacing(vec2(8.0, 6.0)).show(ui, fields);
+    }
 }
 
 /// Help ▸ About GridCraft: the app, its contributors and the AI models that helped. The credits
@@ -2046,7 +2059,7 @@ fn name_manager(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, open: &mu
     });
     ui.add_space(4.0);
     egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
-        egui::Grid::new("names").striped(true).num_columns(4).show(ui, |ui| {
+        crate::widgets::Grid::new("names").striped(true).num_columns(4).show(ui, |ui| {
             ui.strong("Name");
             ui.strong("Value");
             ui.strong("Refers To");
@@ -2327,7 +2340,7 @@ fn command_search(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm
 fn goal_seek(app: &mut SheetApp, ui: &mut egui::Ui, d: &mut Dialog, confirm: &mut bool) {
     let get = |k: &str| d.values.get(k).and_then(Json::as_str).unwrap_or("").to_string();
     let (mut set, mut to, mut changing) = (get("set"), get("to"), get("changing"));
-    egui::Grid::new("gs").show(ui, |ui| {
+    crate::widgets::Grid::new("gs").show(ui, |ui| {
         ui.label("Set cell:");
         ui.text_edit_singleline(&mut set);
         ui.end_row();

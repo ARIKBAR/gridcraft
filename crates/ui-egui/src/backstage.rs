@@ -645,7 +645,7 @@ fn info(app: &mut SheetApp, ui: &mut Ui, bs: &mut Backstage) {
     });
     ui.add_space(22.0);
     section(ui, lang, "Properties");
-    egui::Grid::new("backstage_props").num_columns(2).spacing(vec2(18.0, 8.0)).show(ui, |ui| {
+    crate::widgets::Grid::new("backstage_props").num_columns(2).spacing(vec2(18.0, 8.0)).show(ui, |ui| {
         ui.label(RichText::new(lang.tr("Location")).color(t.text_dim));
         ui.label(path.as_deref().unwrap_or(lang.tr("Not saved yet")));
         ui.end_row();
@@ -981,7 +981,7 @@ fn options(app: &mut SheetApp, ui: &mut Ui) {
     section(ui, lang, "Options|General");
     // A right-to-left interface mirrors the rows: the label on the right, its control on the left.
     let rtl = lang.is_rtl();
-    egui::Grid::new("backstage_options_general").num_columns(2).spacing(vec2(18.0, 10.0)).show(ui, |ui| {
+    crate::widgets::Grid::new("backstage_options_general").num_columns(2).spacing(vec2(18.0, 10.0)).show(ui, |ui| {
         for (label, control) in [("Display theme", theme_combo as fn(&mut SheetApp, &mut Ui)), ("Interface language", language_combo)] {
             if rtl {
                 control(app, ui);
