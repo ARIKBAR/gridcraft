@@ -2133,7 +2133,7 @@ fn view(app: &mut SheetApp, ui: &mut Ui) {
     column(ui, |ui| {
         // Rulers exist only in Page Layout view.
         let mut ruler = !app.session.hide_ruler;
-        let ruler_resp = ui.add_enabled(page_layout, egui::Checkbox::new(&mut ruler, lang.tr("Ruler")));
+        let ruler_resp = ui.add_enabled(page_layout, crate::widgets::Checkbox::new(&mut ruler, lang.tr("Ruler")));
         control_keytip(app, ui, &ruler_resp, "view.ruler");
         if ruler_resp.changed() {
             act(app, "view.ruler", json!({"on": ruler}));
