@@ -1202,6 +1202,9 @@ pub(crate) fn paint_quadrant(
                 Value::Number(_) => HAlign::Right,
                 Value::Bool(_) | Value::Error(_) => HAlign::Center,
                 _ if numeric => HAlign::Right,
+                // Context reading order: text that starts with a Hebrew or Arabic letter aligns
+                // right, on either sheet direction (painted before the mirror, hence the swap).
+                _ if crate::bidi::starts_rtl(&text) => painted_halign(HAlign::Right, geo.rtl),
                 _ => HAlign::Left,
             },
             h => painted_halign(h, geo.rtl),
@@ -2736,10 +2739,17 @@ fn in_cell_editor(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, sh: &Sheet, 
     let font = FontId::new(size, theme::cell_family(&st.font.name, st.font.bold, st.font.italic));
     let text_w = ui.painter().layout_no_wrap(ed.text.clone(), font.clone(), Color32::BLACK).size().x;
     let lines = ed.text.lines().count().max(1) as f32 + if ed.text.ends_with('\n') { 1.0 } else { 0.0 };
-    let w = (text_w + 14.0).max(rect.width()).min(geo.cells.right() - rect.left());
     let h = (size * 1.3 * lines + 4.0).max(rect.height());
-    // Grows to the left on a right-to-left sheet.
-    let erect = geo.mirror_rect(Rect::from_min_size(rect.min, vec2(w, h)));
+    // Grows to the left on a right-to-left sheet, and for Hebrew or Arabic text (which sits on the
+    // cell's right side) on a left-to-right one.
+    let logical = if crate::bidi::starts_rtl(&ed.text) && !geo.rtl {
+        let w = (text_w + 14.0).max(rect.width()).min(rect.right() - geo.cells.left());
+        Rect::from_min_max(pos2(rect.right() - w, rect.top()), pos2(rect.right(), rect.top() + h))
+    } else {
+        let w = (text_w + 14.0).max(rect.width()).min(geo.cells.right() - rect.left());
+        Rect::from_min_size(rect.min, vec2(w, h))
+    };
+    let erect = geo.mirror_rect(logical);
     let fill = match st.fill.pattern {
         PatternType::Solid => st.fill.fg.resolve(&wb.theme).map(theme::color32).unwrap_or(Color32::WHITE),
         _ => Color32::WHITE,

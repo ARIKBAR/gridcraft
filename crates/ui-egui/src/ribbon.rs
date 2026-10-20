@@ -172,8 +172,11 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
         .show(ui, |ui| {
             // Tabs row.
             let tabs_rect = Rect::from_min_size(ui.cursor().min, vec2(ui.available_width(), 32.0));
+            // A right-to-left interface (Hebrew) lays the tabs out from the right.
+            let rtl = app.ui.language.is_rtl();
+            let row_layout = if rtl { egui::Layout::right_to_left(egui::Align::Center) } else { egui::Layout::left_to_right(egui::Align::Center) };
             ui.scope_builder(egui::UiBuilder::new().max_rect(tabs_rect), |ui| {
-                ui.horizontal(|ui| {
+                ui.with_layout(row_layout, |ui| {
                     ui.spacing_mut().item_spacing.x = 2.0;
                     ui.add_space(8.0);
                     if app.chrome.file_tab {
@@ -233,6 +236,7 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
             let inner = card.shrink2(vec2(10.0, 6.0));
             ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
                 egui::ScrollArea::horizontal().scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden).show(ui, |ui| {
+                    // The groups stay left to right: their controls are placed for that order.
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing = vec2(2.0, 2.0);
                         match app.ui.ribbon_tab.as_str() {

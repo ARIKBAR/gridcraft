@@ -7,6 +7,7 @@
 #![forbid(unsafe_code)]
 
 pub mod backstage;
+pub mod bidi;
 mod border_preview;
 mod cell_pictures;
 pub mod chartview;
@@ -651,10 +652,18 @@ impl SheetApp {
                 let code = p.get("language").or_else(|| p.get("code")).and_then(Json::as_str).unwrap_or("");
                 match i18n::Language::parse(code) {
                     Some(l) => {
+                        let was = self.ui.language;
                         self.ui.language = l;
+                        // Choosing Hebrew sets Options › Default direction to right-to-left, as
+                        // Hebrew Excel ships; switching away leaves the option as the user set it.
+                        if l.is_rtl() && !was.is_rtl() {
+                            self.session.prefs.right_to_left = true;
+                        }
                         Ok(json!({"language": l}))
                     }
-                    None => Err(format!("unknown language {code:?} (use \"en\", \"es\", \"zh\", \"ja\", \"ko\", \"ru\", \"pt\" or \"cs\")")),
+                    None => Err(format!(
+                        "unknown language {code:?} (use \"en\", \"es\", \"zh\", \"ja\", \"ko\", \"ru\", \"pt\", \"de\", \"cs\", \"fr\", \"sr\" or \"he\")"
+                    )),
                 }
             }
             "app.language.english" => {

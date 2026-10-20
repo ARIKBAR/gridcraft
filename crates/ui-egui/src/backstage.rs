@@ -961,6 +961,10 @@ fn options(app: &mut SheetApp, ui: &mut Ui) {
     if ui.checkbox(&mut formula_bar, lang.tr("Show formula bar")).changed() {
         app.run_or_alert("view.formulaBar", json!({"on": formula_bar}));
     }
+    let mut rtl = app.session.prefs.right_to_left;
+    if ui.checkbox(&mut rtl, lang.tr("New sheets right-to-left (default direction)")).changed() {
+        app.run_or_alert("options.defaultDirection", json!({"rightToLeft": rtl}));
+    }
     ui.add_space(18.0);
     section(ui, lang, "Options|Editing");
     let mut autocomplete = app.ui.autocomplete;
