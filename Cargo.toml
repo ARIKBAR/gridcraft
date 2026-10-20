@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/*", "apps/*", "xtask"]
 default-members = ["crates/*", "apps/gridcraft", "apps/gridcraft-cli", "xtask"]
 # Vendored third-party crates are patched in below, not workspace members (no fmt/clippy/tests).
-exclude = ["vendor/epaint"]
+exclude = ["vendor/egui", "vendor/epaint"]
 
 [workspace.package]
 version = "0.8.0"
@@ -62,6 +62,9 @@ epaint_default_fonts = "0.36"
 # vendor/epaint/src/text/bidi.rs and docs/localization-parity.md.
 [patch.crates-io]
 epaint = { path = "vendor/epaint" }
+# egui whose Grid can run right to left (first column rightmost), for mirrored dialogs and
+# panes. Vendored from egui 0.36.2; see vendor/egui/VENDORED.md.
+egui = { path = "vendor/egui" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
