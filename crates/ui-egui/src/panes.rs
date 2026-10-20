@@ -19,33 +19,39 @@ pub fn show(app: &mut SheetApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     // Capped at half the window so a pane can never cover the sheet, whatever its content asks for.
     let max = (ui.available_width() / 2.0).max(300.0);
-    let panel = egui::Panel::right("task_pane").default_size(300.0).max_size(max).resizable(true);
+    // A right-to-left interface (Hebrew) puts task panes on the left, their content from the right.
+    let rtl = crate::i18n::current(ui.ctx()).is_rtl();
+    let panel = if rtl { egui::Panel::left("task_pane") } else { egui::Panel::right("task_pane") };
+    let panel = panel.default_size(300.0).max_size(max).resizable(true);
     panel.frame(egui::Frame::NONE.fill(t.ribbon).inner_margin(10)).show(ui, |ui| {
-        ui.horizontal(|ui| {
-            let title = match pane.as_str() {
-                "comments" => "Comments",
-                "watch" => "Watch Window",
-                "selection" => "Selection",
-                "formatChart" => "Format Chart Area",
-                _ => "",
-            };
-            ui.label(egui::RichText::new(title).font(theme::ui_bold(15.0)));
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if crate::widgets::icon_button(ui, crate::icons::Icon::Close, t.text_dim, "Close", vec2(22.0, 22.0)).clicked() {
-                    if pane == "comments" {
-                        app.run_or_alert("review.showComments", json!({"on": false}));
+        ui.scope_builder(egui::UiBuilder::new().layout(egui::Layout::top_down(if rtl { egui::Align::Max } else { egui::Align::Min })), |ui| {
+            ui.horizontal(|ui| {
+                let title = match pane.as_str() {
+                    "comments" => "Comments",
+                    "watch" => "Watch Window",
+                    "selection" => "Selection",
+                    "formatChart" => "Format Chart Area",
+                    _ => "",
+                };
+                ui.label(egui::RichText::new(title).font(theme::ui_bold(15.0)));
+                let trailing = if rtl { egui::Layout::left_to_right(egui::Align::Center) } else { egui::Layout::right_to_left(egui::Align::Center) };
+                ui.with_layout(trailing, |ui| {
+                    if crate::widgets::icon_button(ui, crate::icons::Icon::Close, t.text_dim, "Close", vec2(22.0, 22.0)).clicked() {
+                        if pane == "comments" {
+                            app.run_or_alert("review.showComments", json!({"on": false}));
+                        }
+                        app.grid.pane = None;
                     }
-                    app.grid.pane = None;
-                }
+                });
             });
-        });
-        ui.separator();
-        egui::ScrollArea::vertical().show(ui, |ui| match pane.as_str() {
-            "comments" => comments(app, ui),
-            "watch" => watch(app, ui),
-            "selection" => selection(app, ui),
-            "formatChart" => format_chart(app, ui),
-            _ => {}
+            ui.separator();
+            egui::ScrollArea::vertical().show(ui, |ui| match pane.as_str() {
+                "comments" => comments(app, ui),
+                "watch" => watch(app, ui),
+                "selection" => selection(app, ui),
+                "formatChart" => format_chart(app, ui),
+                _ => {}
+            });
         });
     });
 }

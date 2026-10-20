@@ -995,6 +995,17 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Unprotect Sheet…" => "בטל הגנה על גליון…",
         "Select All Sheets" => "בחר את כל הגליונות",
         "All sheets" => "כל הגליונות",
+        "Header (&L left, &C center, &R right; &P page, &N pages, &D date, &A sheet):" => {
+            "כותרת עליונה (&L שמאל, &C מרכז, &R ימין; &P עמוד, &N עמודים, &D תאריך, &A גליון):"
+        }
+        "Forecast start (a date or number in the history; blank: after the last point):" => {
+            "תחילת התחזית (תאריך או מספר מתוך ההיסטוריה; ריק: אחרי הנקודה האחרונה):"
+        }
+        "Source:" => "מקור:",
+        "End date:" => "תאריך סיום:",
+        "Protect workbook for: Structure (sheets can't be added, moved, renamed, hidden or deleted)." => {
+            "הגן על חוברת העבודה עבור: מבנה (לא ניתן להוסיף, להזיז, לשנות שם, להסתיר או למחוק גליונות)."
+        }
         _ => return None,
     })
 }

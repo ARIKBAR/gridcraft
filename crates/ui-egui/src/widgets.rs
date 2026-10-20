@@ -273,20 +273,26 @@ pub fn color_palette(ui: &mut Ui, theme_colors: &[u32; 12], none_label: &str) ->
 pub fn message_box(app: &mut SheetApp, ctx: &egui::Context) {
     let Some((title, msg)) = app.message.clone() else { return };
     let mut close = false;
+    // Mirrored in a right-to-left interface: the icon and text from the right, OK on the left.
+    let rtl = crate::i18n::current(ctx).is_rtl();
     egui::Modal::new(egui::Id::new("message_box")).show(ctx, |ui| {
         ui.set_width(380.0);
-        ui.horizontal(|ui| {
+        let row = if rtl { egui::Layout::right_to_left(egui::Align::Min) } else { egui::Layout::left_to_right(egui::Align::Min) };
+        ui.with_layout(row, |ui| {
             let (r, _) = ui.allocate_exact_size(vec2(36.0, 36.0), Sense::hover());
             ui.painter().circle_filled(r.center(), 16.0, Color32::from_rgb(0xF2, 0xC3, 0x2E));
             ui.painter().text(r.center(), Align2::CENTER_CENTER, "!", theme::ui_bold(20.0), Color32::WHITE);
-            ui.vertical(|ui| {
+            ui.with_layout(egui::Layout::top_down(if rtl { egui::Align::Max } else { egui::Align::Min }), |ui| {
                 ui.label(egui::RichText::new(title).strong());
                 ui.add(egui::Label::new(msg).wrap());
             });
         });
         ui.add_space(8.0);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if ui.button("  OK  ").clicked() || ui.input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape)) {
+        let buttons = if rtl { egui::Layout::left_to_right(egui::Align::Center) } else { egui::Layout::right_to_left(egui::Align::Center) };
+        ui.with_layout(buttons, |ui| {
+            if ui.button(format!("  {}  ", crate::i18n::current(ui.ctx()).tr("OK"))).clicked()
+                || ui.input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape))
+            {
                 close = true;
             }
         });
