@@ -89,17 +89,17 @@ pub fn small_button(ui: &mut Ui, icon: Icon, label: &str, tip: &str, dropdown: b
     } else if resp.hovered() {
         ui.painter().rect_filled(rect, 4.0, t.hover);
     }
-    icons::paint(ui.painter(), Rect::from_center_size(pos2(rect.left() + 12.0, rect.center().y), vec2(16.0, 16.0)), icon, t.text);
+    // A right-to-left interface mirrors the button: icon on the right, the arrow on the left.
+    let rtl = crate::i18n::current(ui.ctx()).is_rtl();
+    let icon_x = if rtl { rect.right() - 12.0 } else { rect.left() + 12.0 };
+    icons::paint(ui.painter(), Rect::from_center_size(pos2(icon_x, rect.center().y), vec2(16.0, 16.0)), icon, t.text);
     if !label.is_empty() {
-        ui.painter().text(pos2(rect.left() + 24.0, rect.center().y), Align2::LEFT_CENTER, label, font, t.text);
+        let (x, anchor) = if rtl { (rect.right() - 24.0, Align2::RIGHT_CENTER) } else { (rect.left() + 24.0, Align2::LEFT_CENTER) };
+        ui.painter().text(pos2(x, rect.center().y), anchor, label, font, t.text);
     }
     if dropdown {
-        icons::paint(
-            ui.painter(),
-            Rect::from_center_size(pos2(rect.right() - 7.0, rect.center().y + 1.0), vec2(10.0, 10.0)),
-            Icon::Chevron,
-            t.text_dim,
-        );
+        let arrow_x = if rtl { rect.left() + 7.0 } else { rect.right() - 7.0 };
+        icons::paint(ui.painter(), Rect::from_center_size(pos2(arrow_x, rect.center().y + 1.0), vec2(10.0, 10.0)), Icon::Chevron, t.text_dim);
     }
     resp.on_hover_text(tr(ui, tip))
 }

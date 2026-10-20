@@ -33,7 +33,7 @@ right-to-left sheets and full complex-script support. Part of
   starts with a Hebrew or Arabic letter aligns right (Excel's Context reading order), the in-cell
   editor opens on that side, and Left/Right move the caret the way they point inside it.
   Options › Default direction makes new workbooks and inserted sheets right-to-left; choosing
-  Hebrew turns it on. Justified bidi rows are aligned, not justified.
+  Hebrew turns it on. In a Hebrew interface the ribbon is mirrored, and the sheet tab bar is mirrored for a Hebrew interface or a right-to-left sheet. Justified bidi rows are aligned, not justified.
 - **Script support.** System-font fallback for CJK, Thai and Hebrew landed in #38 (closes #32;
   #142 is still open pending confirmation). Arabic is shaped in logical order, so its joining is
   unverified, and Devanagari doesn't reorder. **Sheet Right-to-Left**
@@ -61,7 +61,7 @@ separators, number/date formats, machine translation with agent review, and scri
 | Simplified Chinese (Mandarin) | zh-Hans | 266 (~12%) | no | CJK system-font fallback (#38); IME unverified; PDF can't export | no | menus only | 8–13 h |
 | Spanish | es | 0 (0%) | no | Latin: yes | no | none | 6–10 h |
 | Hindi | hi | 0 (0%) | no | Devanagari: **no shaping** | no | none | 12–18 h |
-| Hebrew | he | 973 (~44%): every key the other catalogs translate | dialogs, Format Cells, File view | bidi text; Hebrew points kept with their letters; tab row laid out from the right; ribbon groups and sheet tabs not mirrored | no | menus, File view, dialogs | 6–10 h |
+| Hebrew | he | 973 (~44%): every key the other catalogs translate | dialogs, Format Cells, File view | bidi text; Hebrew points kept with their letters; ribbon (tabs, groups, buttons) and sheet tab bar mirrored; dialogs and task panes not mirrored | no | menus, File view, dialogs | 6–10 h |
 | Arabic | ar | 0 (0%) | no | bidi text (shared with Hebrew); joining unverified; Sheet Right-to-Left mirrors the grid (#146) | no | none | 25–35 h |
 | French | fr | 0 (0%) | no | Latin: yes | no | none | 6–10 h |
 | Portuguese | pt-BR | 923 (~42%) | dialogs and tooltips (dialogs take effect with #669) | Latin: yes | no | menus, File view, dialogs | 2–4 h |
@@ -93,7 +93,7 @@ language (none so far) and of localized function names.
 
 | Date | Change | Summary |
 |---|---|---|
-| 2026-10-20 | major | Hebrew interface catalog (`i18n/he.rs`, 973 labels: every key the other catalogs translate; `he`/`iw` locales); bidirectional text layout (vendored epaint with UAX #9: visual reordering, bracket mirroring, bidi-aware caret and hit-testing); General-aligned Hebrew/Arabic text aligns right, in-cell editor grows from the right, visual arrow keys; `options.defaultDirection` (Options › Default direction), turned on by choosing Hebrew; Hebrew tab row laid out from the right |
+| 2026-10-20 | major | Hebrew interface catalog (`i18n/he.rs`, 973 labels: every key the other catalogs translate; `he`/`iw` locales); bidirectional text layout (vendored epaint with UAX #9: visual reordering, bracket mirroring, bidi-aware caret and hit-testing); General-aligned Hebrew/Arabic text aligns right, in-cell editor grows from the right, visual arrow keys; `options.defaultDirection` (Options › Default direction), turned on by choosing Hebrew; the Hebrew ribbon is mirrored (tabs, groups, small buttons) and the sheet tab bar is mirrored for a Hebrew interface or a right-to-left sheet; the sheet tab context menu is translated |
 | 2026-10-19 | minor | Defined-name length counts characters, not bytes: Arabic names up to 255 letters are accepted, and Create from Selection keeps long Arabic headers |
 | 2026-10-19 | minor | Table names are limited to 255 Unicode characters |
 | 2026-10-19 | minor | Right-to-left sheets in legacy `.xls` files (common in older Arabic workbooks) open right-to-left |

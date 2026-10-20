@@ -987,6 +987,14 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Locking cells or hiding formulas has no effect until you protect the worksheet (Review › Protect Sheet)." => {
             "נעילת תאים או הסתרת נוסחאות אינה משפיעה עד שתגן על הגליון (סקירה › הגן על גליון)."
         }
+        "Rename" => "שנה שם",
+        "Move or Copy…" => "העבר או העתק…",
+        "Duplicate" => "שכפל",
+        "Tab Color" => "צבע לשונית",
+        "Unhide…" => "בטל הסתרה…",
+        "Unprotect Sheet…" => "בטל הגנה על גליון…",
+        "Select All Sheets" => "בחר את כל הגליונות",
+        "All sheets" => "כל הגליונות",
         _ => return None,
     })
 }
