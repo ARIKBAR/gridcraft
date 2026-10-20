@@ -1006,6 +1006,50 @@ pub(super) fn translate(text: &str) -> Option<&'static str> {
         "Protect workbook for: Structure (sheets can't be added, moved, renamed, hidden or deleted)." => {
             "הגן על חוברת העבודה עבור: מבנה (לא ניתן להוסיף, להזיז, לשנות שם, להסתיר או למחוק גליונות)."
         }
+        "Preview" => "תצוגה מקדימה",
+        "Show" => "הצג",
+        "No contributor data was built into this copy." => "נתוני התורמים לא נכללו בעותק הזה.",
+        "No model credits were built into this copy." => "נתוני המודלים לא נכללו בעותק הזה.",
+        "GridCraft is fully drivable by agents. Every menu item, button and gesture is a command:" => {
+            "סוכנים יכולים להפעיל את GridCraft במלואה. כל פריט תפריט, כפתור ומחווה הם פקודה:"
+        }
+        "A clean-room, open-source, Rust-native spreadsheet. Part of ArtCraft." => "גיליון אלקטרוני בקוד פתוח שנכתב מאפס ב-Rust. חלק מ-ArtCraft.",
+        "Automation in this workbook. GridCraft runs its own scripts; a file's VBA project is preserved but not executed." => {
+            "אוטומציה בחוברת העבודה. GridCraft מריצה סקריפטים משלה; פרויקט VBA שבקובץ נשמר אבל לא מורץ."
+        }
+        " Close " => " סגור ",
+        "Reports:" => "דוחות:",
+        "  Solve  " => "  פתור  ",
+        "↑  Sort Ascending" => "↑  מיין בסדר עולה",
+        "↓  Sort Descending" => "↓  מיין בסדר יורד",
+        "Apply" => "החל",
+        "Send" => "שלח",
+        "Add Watch (active cell)" => "הוסף מעקב (התא הפעיל)",
+        "Cell" => "תא",
+        "Formula" => "נוסחה",
+        "The chart no longer exists." => "התרשים כבר לא קיים.",
+        "Fill…" => "מילוי…",
+        "No comments on this sheet yet. Select a cell and choose New Comment." => "אין עדיין הערות בגליון. בחר תא ובחר 'הערה חדשה'.",
+        "Resolved" => "נפתרה",
+        "There are no shapes, pictures or charts on this sheet." => "אין צורות, תמונות או תרשימים בגליון הזה.",
+        "Select a chart to format it." => "בחר תרשים כדי לעצב אותו.",
+        "Can't Undo" => "לא ניתן לבטל",
+        "Print…" => "הדפס…",
+        "Export as PDF…" => "ייצא כ-PDF…",
+        "More Borders…" => "גבולות נוספים…",
+        "More Functions…" => "פונקציות נוספות…",
+        "Highlight Cells Rules" => "כללי סימון תאים",
+        "Text that Contains…" => "טקסט שמכיל…",
+        "A Date Occurring…" => "תאריך מתרחש…",
+        "Duplicate Values…" => "ערכים כפולים…",
+        "Top/Bottom Rules" => "כללי עליון/תחתון",
+        "New Rule…" => "כלל חדש…",
+        "Clear Rules" => "נקה כללים",
+        "Manage Rules…" => "נהל כללים…",
+        "Table Name:" => "שם טבלה:",
+        "Macros preserved (not executed)" => "פקודות מאקרו נשמרו (לא מורצות)",
+        "Theme Colors" => "צבעי ערכת נושא",
+        "Standard Colors" => "צבעים רגילים",
         _ => return None,
     })
 }
