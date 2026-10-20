@@ -119,6 +119,15 @@ fn load_prefs(app: &mut SheetApp) {
     {
         app.session.prefs = p;
     }
+    // Unofficial Hebrew build: its first launch switches the interface to Hebrew (and new sheets
+    // to right-to-left) once, even over an English setting saved by an official GridCraft that
+    // shares this settings folder. Later choices in File › Options are kept.
+    let marker = dir.join("hebrew-build-introduced");
+    if !marker.exists() {
+        let _ = app.run("app.language.set", serde_json::json!({"language": "he"}));
+        let _ = std::fs::create_dir_all(&dir);
+        let _ = std::fs::write(&marker, b"1");
+    }
 }
 
 fn save_prefs(app: &SheetApp) {
