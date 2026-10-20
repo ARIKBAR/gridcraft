@@ -275,7 +275,7 @@ fn theme_choices(app: &mut SheetApp, ui: &mut Ui) {
     let lang = app.ui.language;
     let mode = app.ui.theme_mode();
     for (value, label) in [("system", "System"), ("light", "Light"), ("dark", "Dark")] {
-        if ui.radio(mode == value, lang.tr(label)).clicked() {
+        if crate::widgets::radio(ui, mode == value, lang.tr(label)).clicked() {
             act(app, "view.theme", json!({"mode": value}));
             ui.close();
         }
@@ -1721,13 +1721,13 @@ fn page_layout(app: &mut SheetApp, ui: &mut Ui) {
     column(ui, |ui| {
         ui.label(egui::RichText::new(app.ui.language.tr("Gridlines")).strong().small());
         let mut v = sh.0;
-        let resp = ui.checkbox(&mut v, screen);
+        let resp = crate::widgets::checkbox(ui, &mut v, screen);
         control_keytip(app, ui, &resp, "view.gridlines");
         if resp.changed() || invoke(app, "view.gridlines") {
             act(app, "view.gridlines", json!({"on": checkbox_on(resp.changed(), v)}));
         }
         let mut p = sh.2;
-        let resp = ui.checkbox(&mut p, print);
+        let resp = crate::widgets::checkbox(ui, &mut p, print);
         control_keytip(app, ui, &resp, "pageLayout.printGridlines");
         if resp.changed() || invoke(app, "pageLayout.printGridlines") {
             act(app, "pageLayout.printGridlines", json!({"on": checkbox_on(resp.changed(), p)}));
@@ -1736,13 +1736,13 @@ fn page_layout(app: &mut SheetApp, ui: &mut Ui) {
     column(ui, |ui| {
         ui.label(egui::RichText::new(app.ui.language.tr("Headings")).strong().small());
         let mut v = sh.1;
-        let resp = ui.checkbox(&mut v, screen);
+        let resp = crate::widgets::checkbox(ui, &mut v, screen);
         control_keytip(app, ui, &resp, "view.headings");
         if resp.changed() || invoke(app, "view.headings") {
             act(app, "view.headings", json!({"on": checkbox_on(resp.changed(), v)}));
         }
         let mut p = sh.3;
-        let resp = ui.checkbox(&mut p, print);
+        let resp = crate::widgets::checkbox(ui, &mut p, print);
         control_keytip(app, ui, &resp, "pageLayout.printHeadings");
         if resp.changed() || invoke(app, "pageLayout.printHeadings") {
             act(app, "pageLayout.printHeadings", json!({"on": checkbox_on(resp.changed(), p)}));
@@ -2139,7 +2139,7 @@ fn view(app: &mut SheetApp, ui: &mut Ui) {
             act(app, "view.ruler", json!({"on": ruler}));
         }
         let mut g = s.0;
-        let resp = ui.checkbox(&mut g, lang.tr("Gridlines"));
+        let resp = crate::widgets::checkbox(ui, &mut g, lang.tr("Gridlines"));
         control_keytip(app, ui, &resp, "view.gridlines");
         if resp.changed() {
             act(app, "view.gridlines", json!({"on": g}));
@@ -2148,13 +2148,13 @@ fn view(app: &mut SheetApp, ui: &mut Ui) {
     ui.add_space(6.0);
     column(ui, |ui| {
         let mut fb = app.session.prefs.formula_bar;
-        let resp = ui.checkbox(&mut fb, lang.tr("Formula Bar"));
+        let resp = crate::widgets::checkbox(ui, &mut fb, lang.tr("Formula Bar"));
         control_keytip(app, ui, &resp, "view.formulaBar");
         if resp.changed() || invoke(app, "view.formulaBar") {
             act(app, "view.formulaBar", json!({"on": checkbox_on(resp.changed(), fb)}));
         }
         let mut h = s.1;
-        let resp = ui.checkbox(&mut h, lang.tr("Headings"));
+        let resp = crate::widgets::checkbox(ui, &mut h, lang.tr("Headings"));
         control_keytip(app, ui, &resp, "view.headings");
         if resp.changed() {
             act(app, "view.headings", json!({"on": h}));
@@ -2213,7 +2213,7 @@ fn view(app: &mut SheetApp, ui: &mut Ui) {
         });
         let mut animations = app.ui.animations;
         let hint = lang.tr("Glide the selection outline to the cell you move to instead of jumping there");
-        if ui.checkbox(&mut animations, lang.tr("Animations")).on_hover_text(hint).changed() {
+        if crate::widgets::checkbox(ui, &mut animations, lang.tr("Animations")).on_hover_text(hint).changed() {
             act(app, "view.animations", json!({"on": animations}));
         }
     });
@@ -2317,7 +2317,7 @@ fn table_design(app: &mut SheetApp, ui: &mut Ui) {
             ("Banded Rows", "table.bandedRows", banded),
         ] {
             let mut on = v;
-            if ui.checkbox(&mut on, label).changed() {
+            if crate::widgets::checkbox(ui, &mut on, label).changed() {
                 act(app, cmd, json!({"table": tname, "on": on}));
             }
         }
@@ -2329,7 +2329,7 @@ fn table_design(app: &mut SheetApp, ui: &mut Ui) {
             ("Banded Columns", "table.bandedColumns", banded_c),
         ] {
             let mut on = v;
-            if ui.checkbox(&mut on, label).changed() {
+            if crate::widgets::checkbox(ui, &mut on, label).changed() {
                 act(app, cmd, json!({"table": tname, "on": on}));
             }
         }

@@ -2845,7 +2845,7 @@ fn filter_menu(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, was_open: bool)
             let all = checks.iter().filter(|(v, _)| matches(v)).all(|(_, b)| *b);
             let mut all_new = all;
             let label = if needle.is_empty() { "(Select All)" } else { "(Select All Search Results)" };
-            if ui.checkbox(&mut all_new, label).changed() {
+            if crate::widgets::checkbox(ui, &mut all_new, label).changed() {
                 for c in checks.iter_mut().filter(|(v, _)| matches(v)) {
                     c.1 = all_new;
                 }
@@ -2854,7 +2854,7 @@ fn filter_menu(app: &mut SheetApp, ui: &mut egui::Ui, geo: &Geo, was_open: bool)
             // worked over the values themselves (#432).
             egui::ScrollArea::vertical().max_height(220.0).auto_shrink([false, true]).show(ui, |ui| {
                 for (v, on) in checks.iter_mut().filter(|(v, _)| matches(v)) {
-                    ui.checkbox(on, v.as_str());
+                    crate::widgets::checkbox(ui, on, v.as_str());
                 }
             });
             ui.ctx().data_mut(|d| {
