@@ -1483,12 +1483,15 @@ fn about(ui: &mut egui::Ui, d: &mut Dialog) {
         "Contributors" => crate::credits::contributors_ui(ui),
         "Models" => crate::credits::models_ui(ui),
         _ => {
-            ui.heading("GridCraft");
-            ui.label(format!("Version {}", env!("CARGO_PKG_VERSION")));
+            ui.heading("GridCraft עברית");
+            ui.label(format!("Version {} (unofficial Hebrew build)", env!("CARGO_PKG_VERSION")));
             ui.add_space(4.0);
-            ui.label("A clean-room, open-source, Rust-native spreadsheet. Part of ArtCraft.");
-            ui.hyperlink_to("getartcraft.com/apps/gridcraft", "https://getartcraft.com/apps/gridcraft");
-            ui.hyperlink_to("Join the ArtCraft Discord", "https://discord.gg/artcraft");
+            // A modified build: per docs/brand/LICENSE-brand.txt it says in plain text what it is
+            // based on and does not present itself as an ArtCraft product.
+            ui.label("An unofficial community build with Hebrew support, based on GridCraft by the ArtCraft team.");
+            ui.label("It is not made, endorsed or supported by the ArtCraft team.");
+            ui.hyperlink_to("Source of this build", "https://github.com/ARIKBAR/gridcraft/tree/hebrew-support");
+            ui.hyperlink_to("Official GridCraft", "https://github.com/storytold/gridcraft");
         }
     }
 }
