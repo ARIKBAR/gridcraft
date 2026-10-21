@@ -342,6 +342,16 @@ impl SheetApp {
         Self::setup_context_for_language(ctx, dark, i18n::Language::En);
     }
 
+    /// After the interface language became `self.ui.language` (it was `was`): choosing a
+    /// right-to-left language (Hebrew) sets Options › Default direction to right-to-left, as Hebrew
+    /// Excel ships. Switching away leaves the option as the user set it. Used by
+    /// `app.language.set` and by the first run, which takes the desktop's language.
+    pub fn adopt_language_direction(&mut self, was: i18n::Language) {
+        if self.ui.language.is_rtl() && !was.is_rtl() {
+            self.session.prefs.right_to_left = true;
+        }
+    }
+
     /// Sets up fonts and visuals for a specific persisted interface language.
     pub fn setup_context_for_language(ctx: &egui::Context, dark: bool, language: i18n::Language) {
         ctx.set_fonts(theme::font_definitions_for_language(language));
@@ -654,11 +664,7 @@ impl SheetApp {
                     Some(l) => {
                         let was = self.ui.language;
                         self.ui.language = l;
-                        // Choosing Hebrew sets Options › Default direction to right-to-left, as
-                        // Hebrew Excel ships; switching away leaves the option as the user set it.
-                        if l.is_rtl() && !was.is_rtl() {
-                            self.session.prefs.right_to_left = true;
-                        }
+                        self.adopt_language_direction(was);
                         Ok(json!({"language": l}))
                     }
                     None => Err(format!(
