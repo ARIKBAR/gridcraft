@@ -106,10 +106,12 @@ fn load_prefs(app: &mut SheetApp) {
     // ...and its light or dark appearance (#239), until a theme is chosen and saved in ui.json.
     app.ui.system_theme = true;
     let Some(dir) = config_dir() else { return };
+    let mut language_saved = false;
     if let Ok(b) = std::fs::read(dir.join("ui.json"))
         && let Ok(ui) = serde_json::from_slice::<gridcraft_ui_egui::UiState>(&b)
     {
         let saved = serde_json::from_slice(&b).ok().and_then(|v| gridcraft_ui_egui::i18n::saved_language(&v));
+        language_saved = saved.is_some();
         let language = saved.unwrap_or(app.ui.language);
         app.ui = ui;
         app.ui.language = language;
@@ -118,6 +120,10 @@ fn load_prefs(app: &mut SheetApp) {
         && let Ok(p) = serde_json::from_slice(&b)
     {
         app.session.prefs = p;
+    } else if !language_saved {
+        // A first run in a right-to-left desktop language starts with right-to-left sheets, as
+        // choosing that language in Options does.
+        app.adopt_language_direction(gridcraft_ui_egui::i18n::Language::En);
     }
     // Unofficial Hebrew build: its first launch switches the interface to Hebrew (and new sheets
     // to right-to-left) once, even over an English setting saved by an official GridCraft that

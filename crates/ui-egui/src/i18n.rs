@@ -130,7 +130,18 @@ impl Language {
     /// A label that needs two translations (Home's text "Orientation" vs Page Layout's print
     /// "Orientation") is keyed `context|label`: English shows only the part after the `|`.
     pub fn tr(self, text: &str) -> &str {
-        let translated = match self {
+        self.translated(text).unwrap_or_else(|| text.rsplit_once('|').map_or(text, |(_, label)| label))
+    }
+
+    /// `tr` for text that is not a catalog key but may be one (a dialog note, often built from a
+    /// sheet name, file name or link): its translation, or else the text whole. Never cut at a
+    /// `|`, which in such text is the user's own.
+    pub fn tr_text(self, text: &str) -> &str {
+        self.translated(text).unwrap_or(text)
+    }
+
+    fn translated(self, text: &str) -> Option<&'static str> {
+        match self {
             Self::En => None,
             Self::Es => es::translate(text),
             Self::Ja => JAPANESE.iter().find(|(english, _)| *english == text).map(|(_, translated)| *translated),
@@ -143,8 +154,7 @@ impl Language {
             Self::Fr => fr::translate(text),
             Self::Sr => sr::translate(text),
             Self::He => he::translate(text),
-        };
-        translated.unwrap_or_else(|| text.rsplit_once('|').map_or(text, |(_, label)| label))
+        }
     }
 }
 

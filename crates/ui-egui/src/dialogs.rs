@@ -1488,7 +1488,7 @@ fn form_fields(ui: &mut egui::Ui, d: &mut Dialog) {
                     }
                 }
                 Field::Note(t) => {
-                    ui.label(egui::RichText::new(lang.tr(&t)).small());
+                    ui.label(egui::RichText::new(lang.tr_text(&t)).small());
                 }
             }
             ui.end_row();
